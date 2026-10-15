@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediAI — Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    Medi<span>AI</span>
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-secondary btn-sm" onclick="window.location.href='index.html'">← New Patient</button>
+    <button class="btn btn-danger btn-sm" onclick="clearSession()">End Session</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+  <!-- Left Sidebar -->
+  <aside class="dash-sidebar">
+    <div class="patient-info-card" id="patientInfoCard">
+      <div class="pi-name" id="sidebarName">Loading...</div>
+      <div class="pi-meta" id="sidebarMeta"></div>
+      <div id="sidebarTags" style="margin-top:8px;"></div>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-item active" onclick="switchTab('diagnose',this)" id="tab-diagnose">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Diagnose
+      </div>
+      <div class="nav-item" onclick="switchTab('analyse',this)" id="tab-analyse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Analyse Report
+      </div>
+      <div class="nav-item" onclick="switchTab('report',this)" id="tab-report">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Full Report
+      </div>
+      <div class="nav-item" onclick="switchTab('chat',this)" id="tab-chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Chat
+      </div>
+    </nav>
+
+    <div class="session-history">
+      <h4>Session Log</h4>
+      <div id="sessionLog"></div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dash-main">
+
+    <!-- DIAGNOSE TAB -->
+    <div class="tab-content active" id="page-diagnose">
+      <div class="page-header">
+        <h2>🔬 AI Diagnosis</h2>
+        <p>Describe symptoms and get AI-powered differential diagnosis with probability scores</p>
+      </div>
+      <div class="alert alert-info">
+        💡 Be as specific as possible — include severity (1-10), onset (when it started), and any triggers
+      </div>
+      <div class="quick-prompts" id="diagnosePrompts"></div>
+      <div class="chat-container">
+        <div class="chat-messages" id="diagnoseChat"></div>
+        <div class="chat-input-area">
+          <textarea id="diagnoseInput" rows="1" placeholder="Describe your symptoms in detail... e.g. 'Severe headache for 3 days, fever 102°F, stiff neck, sensitivity to light'" onkeydown="handleKey(event,'diagnose')"></textarea>
+          <button class="btn btn-primary" onclick="sendMessage('diagnose')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSE TAB -->
+    <div class="tab-content" id="page-analyse">
+      <div class="page-header">
+        <h2>📊 Report Analysis</h2>
+        <p>Upload test reports for AI interpretation and confirmation of diagnosis</p>
+      </div>
+
+      <div id="pendingTestsAlert"></div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchAnalyseTab('upload',this)">📎 Upload Report</div>
+        <div class="tab" onclick="switchAnalyseTab('manual',this)">⌨️ Enter Values Manually</div>
+      </div>
+
+      <div class="tab-content active" id="analyse-upload">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Click or drag to upload report</p>
+          <p class="hint">Supports: PDF, JPG, PNG — Blood test, X-ray, MRI reports</p>
+          <input type="file" id="fileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(event)">
+        </div>
+        <div id="uploadedFileInfo" style="display:none;" class="alert alert-info"></div>
+      </div>
+
+      <div class="tab-content" id="analyse-manual">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Test Name</label>
+            <input type="text" id="testName" placeholder="e.g. Complete Blood Count (CBC)">
+          </div>
+          <div class="form-group full">
+            <label>Test Values / Results (paste or type)</label>
+            <textarea id="testValues" rows="6" placeholder="e.g.&#10;Hemoglobin: 8.5 g/dL (Low)&#10;WBC: 12,000 /μL (High)&#10;Platelets: 150,000 /μL (Normal)&#10;Sodium: 138 mEq/L"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="analyseManual()" style="margin-top:1rem;">Analyse These Values</button>
+      </div>
+
+      <div class="chat-container" style="margin-top:1rem;">
+        <div class="chat-messages" id="analyseChat"></div>
+        <div class="chat-input-area">
+          <textarea id="analyseInput" rows="1" placeholder="Ask about the report... e.g. 'What does high WBC indicate?' or 'Is this related to the suspected disease?'" onkeydown="handleKey(event,'analyse')"></textarea>
+          <button class="btn btn-primary" onclick="sendMessage('analyse')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT TAB -->
+    <div class="tab-content" id="page-report">
+      <div class="page-header">
+        <h2>📄 Medical Report</h2>
+        <p>Complete AI-generated report for physician review</p>
+      </div>
+      <div class="report-print-btn">
+        <button class="btn btn-primary" onclick="generateReport()">🔄 Generate Report</button>
+        <button class="btn btn-secondary" onclick="printReport()">🖨️ Print / Save PDF</button>
+      </div>
+      <div id="reportContainer"></div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-content" id="page-chat">
+      <div class="page-header">
+        <h2>💬 AI Medical Chat</h2>
+        <p>Ask anything — diet advice, drug interactions, second opinion</p>
+      </div>
+      <div class="quick-prompts" id="chatPrompts"></div>
+      <div class="chat-container">
+        <div class="chat-messages" id="generalChat"></div>
+        <div class="chat-input-area">
+          <textarea id="chatInput" rows="1" placeholder="Ask your AI doctor anything..." onkeydown="handleKey(event,'chat')"></textarea>
+          <button class="btn btn-primary" onclick="sendMessage('chat')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>

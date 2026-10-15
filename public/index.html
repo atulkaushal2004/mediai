@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediAI — Smart Medical Assistant</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    Medi<span>AI</span>
+  </div>
+  <div class="nav-actions">
+    <span id="navDate" style="color:var(--text2);font-size:0.85rem;"></span>
+  </div>
+</nav>
+
+<div class="landing-layout">
+  <!-- History Sidebar -->
+  <aside class="history-sidebar">
+    <div class="sidebar-header">
+      <h3>📋 Patient History</h3>
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search patients..." oninput="searchPatients()">
+      </div>
+    </div>
+    <div class="patient-list" id="patientList">
+      <div style="text-align:center;color:var(--text2);padding:2rem;font-size:0.85rem;">Loading patients...</div>
+    </div>
+  </aside>
+
+  <!-- Registration Form -->
+  <main class="reg-area">
+    <h2>🏥 Patient Registration</h2>
+    <p class="subtitle">Fill in patient details for AI-powered medical assistance</p>
+
+    <form id="patientForm" onsubmit="registerPatient(event)">
+      <div class="form-grid">
+
+        <div class="section-divider">👤 Personal Information</div>
+
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="name" placeholder="e.g. Rahul Sharma" required>
+        </div>
+        <div class="form-group">
+          <label>Age *</label>
+          <input type="number" id="age" placeholder="e.g. 35" min="0" max="120" required>
+        </div>
+        <div class="form-group">
+          <label>Gender *</label>
+          <select id="gender" required>
+            <option value="">Select gender</option>
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Blood Group</label>
+          <select id="bloodGroup">
+            <option value="">Unknown</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location / City *</label>
+          <input type="text" id="location" placeholder="e.g. Delhi, India" required>
+        </div>
+        <div class="form-group">
+          <label>Emergency Contact</label>
+          <input type="text" id="emergencyContact" placeholder="e.g. +91 98765 43210">
+        </div>
+
+        <div class="section-divider">📏 Physical Stats</div>
+
+        <div class="form-group">
+          <label>Weight (kg)</label>
+          <input type="number" id="weight" placeholder="e.g. 70">
+        </div>
+        <div class="form-group">
+          <label>Height (cm)</label>
+          <input type="number" id="height" placeholder="e.g. 170">
+        </div>
+
+        <div class="section-divider">🏥 Medical History</div>
+
+        <div class="form-group full">
+          <label>Underlying / Chronic Diseases (press Enter or comma to add)</label>
+          <div class="tags-input" id="diseaseTags" onclick="document.getElementById('diseaseInput').focus()">
+            <input type="text" id="diseaseInput" placeholder="e.g. Diabetes, Hypertension..." onkeydown="addTag(event,'diseaseTags','diseaseInput','diseases')">
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Current Medications (press Enter to add)</label>
+          <div class="tags-input" id="medicationTags" onclick="document.getElementById('medicationInput').focus()">
+            <input type="text" id="medicationInput" placeholder="e.g. Metformin 500mg, Amlodipine 5mg..." onkeydown="addTag(event,'medicationTags','medicationInput','medications')">
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Known Allergies</label>
+          <input type="text" id="allergies" placeholder="e.g. Penicillin, Sulfa drugs, Aspirin">
+        </div>
+
+        <div class="section-divider">🚬 Lifestyle</div>
+
+        <div class="form-group">
+          <label>Smoking</label>
+          <select id="smoking">
+            <option value="No">Non-smoker</option>
+            <option value="Occasionally">Occasional smoker</option>
+            <option value="Regular">Regular smoker</option>
+            <option value="Ex-smoker">Ex-smoker</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Alcohol Consumption</label>
+          <select id="alcohol">
+            <option value="No">Non-drinker</option>
+            <option value="Occasionally">Occasionally</option>
+            <option value="Regular">Regular drinker</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Register & Continue
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
